@@ -1,0 +1,56 @@
+[
+  {
+    "title": "Complete project documentation",
+    "creation_date": "2023-05-15T09:30:00",
+    "priority": "HIGH",
+    "status": "TODO"
+  },
+  {
+    "title": "Buy groceries for the week",
+    "creation_date": "2023-05-14T18:45:00",
+    "priority": "MEDIUM",
+    "status": "DONE"
+  },
+  {
+    "title": "Schedule dentist appointment",
+    "creation_date": "2023-05-10T11:20:00",
+    "priority": "LOW",
+    "status": "TODO"
+  },
+  {
+    "title": "Submit expense report",
+    "creation_date": "2023-05-12T14:15:00",
+    "priority": "HIGH",
+    "status": "DONE"
+  },
+  {
+    "title": "Research new laptop and sell old laptop",
+    "creation_date": "2023-05-13T16:30:00",
+    "priority": "LOW",
+    "status": "TODO"
+  },
+  {
+    "title": "Renew library books",
+    "creation_date": "2023-05-11T10:00:00",
+    "priority": "LOW",
+    "status": "DONE"
+  },
+  {
+    "title": "Plan weekend trip",
+    "creation_date": "2023-05-16T20:00:00",
+    "priority": "MEDIUM",
+    "status": "TODO"
+  },
+  {
+    "title": "Feed the dogs and the cats",
+    "creation_date": "2025-04-30T22:07:06.718525",
+    "priority": "MEDIUM",
+    "status": "DONE"
+  },
+  {
+    "title": "Buy new fish",
+    "creation_date": "2025-04-30T22:14:32.755092",
+    "priority": "MEDIUM",
+    "status": "DONE"
+  }
+]
