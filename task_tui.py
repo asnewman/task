@@ -55,35 +55,37 @@ class TaskTUI:
         else:
             return curses.color_pair(1)
 
-    def get_filtered_tasks(self) -> List:
-        # Get filtered tasks without sorting
-        tasks = self.task_manager.get_tasks(self.filter_status)
+    def get_filtered_and_sorted_tasks(self) -> List:
+        """Get tasks with both filtering and sorting applied, including original indices"""
+        # First, get all tasks with their original indices
+        all_tasks_with_indices = [(i, task) for i, task in enumerate(self.task_manager.tasks)]
         
-        # First create a mapping to track original indices
-        task_mapping = [(i, task) for i, task in enumerate(tasks)]
+        # Apply filtering if needed
+        if self.filter_status is not None:
+            all_tasks_with_indices = [(i, task) for i, task in all_tasks_with_indices 
+                                     if task.status == self.filter_status]
         
         # Apply sorting if needed
         if self.sort_mode != SortMode.NONE:
             if self.sort_mode == SortMode.PRIORITY_ASC:
-                task_mapping = sorted(task_mapping, key=lambda x: x[1].priority.value)
+                all_tasks_with_indices = sorted(all_tasks_with_indices, key=lambda x: x[1].priority.value)
             elif self.sort_mode == SortMode.PRIORITY_DESC:
-                task_mapping = sorted(task_mapping, key=lambda x: x[1].priority.value, reverse=True)
+                all_tasks_with_indices = sorted(all_tasks_with_indices, key=lambda x: x[1].priority.value, reverse=True)
             elif self.sort_mode == SortMode.DATE_ASC:
-                task_mapping = sorted(task_mapping, key=lambda x: x[1].creation_date)
+                all_tasks_with_indices = sorted(all_tasks_with_indices, key=lambda x: x[1].creation_date)
             elif self.sort_mode == SortMode.DATE_DESC:
-                task_mapping = sorted(task_mapping, key=lambda x: x[1].creation_date, reverse=True)
+                all_tasks_with_indices = sorted(all_tasks_with_indices, key=lambda x: x[1].creation_date, reverse=True)
         
-        # Return the sorted tasks and their original indices
-        return task_mapping
+        return all_tasks_with_indices
 
     def get_visible_tasks(self) -> List:
-        tasks = self.get_filtered_tasks()
+        tasks = self.get_filtered_and_sorted_tasks()
         max_y, _ = self.stdscr.getmaxyx()
         return tasks[self.top_line:self.top_line + max_y - 4]  # Leave space for header and footer
 
     def get_original_index(self, display_index: int) -> int:
         """Gets the original task list index from the display index (accounts for sorting and filtering)"""
-        tasks = self.get_filtered_tasks()
+        tasks = self.get_filtered_and_sorted_tasks()
         if 0 <= display_index < len(tasks):
             # The first element of each tuple is the original index
             return tasks[display_index][0]
@@ -166,7 +168,7 @@ class TaskTUI:
         curses.curs_set(0)
 
     def edit_task_title_prompt(self) -> None:
-        tasks = self.get_filtered_tasks()
+        tasks = self.get_filtered_and_sorted_tasks()
         if not tasks or not (0 <= self.current_row < len(tasks)):
             return
         
@@ -216,7 +218,7 @@ class TaskTUI:
         curses.curs_set(0)
 
     def edit_task_priority_prompt(self) -> None:
-        tasks = self.get_filtered_tasks()
+        tasks = self.get_filtered_and_sorted_tasks()
         if not tasks or not (0 <= self.current_row < len(tasks)):
             return
             
@@ -252,7 +254,7 @@ class TaskTUI:
             self.task_manager.update_task_priority(task_index, new_priority)
 
     def handle_input(self) -> None:
-        tasks = self.get_filtered_tasks()
+        tasks = self.get_filtered_and_sorted_tasks()
         key = self.stdscr.getch()
         
         if key == curses.KEY_RESIZE:
@@ -284,14 +286,23 @@ class TaskTUI:
                 if task_index >= 0:
                     self.task_manager.delete_task(task_index)
                     # Adjust cursor if needed
-                    if self.current_row >= len(self.get_filtered_tasks()):
-                        self.current_row = max(0, len(self.get_filtered_tasks()) - 1)
+                    tasks_after = self.get_filtered_and_sorted_tasks()
+                    if self.current_row >= len(tasks_after):
+                        self.current_row = max(0, len(tasks_after) - 1)
         elif key == ord(' '):
             if tasks and 0 <= self.current_row < len(tasks):
                 # Get the original task index for toggle
                 task_index = self.get_original_index(self.current_row)
                 if task_index >= 0:
+                    # Toggle the status
                     self.task_manager.toggle_task_status(task_index)
+                    
+                    # If filtering by status, the toggled task may disappear
+                    # Adjust the selection if needed
+                    if self.filter_status is not None:
+                        tasks_after = self.get_filtered_and_sorted_tasks()
+                        if self.current_row >= len(tasks_after):
+                            self.current_row = max(0, len(tasks_after) - 1)
         elif key == ord('t'):
             if self.filter_status == TaskStatus.TODO:
                 self.filter_status = None
@@ -344,7 +355,7 @@ class TaskTUI:
         
         # Draw tasks
         visible_tasks = self.get_visible_tasks()
-        all_tasks = self.get_filtered_tasks()
+        all_tasks = self.get_filtered_and_sorted_tasks()
         
         for i, (_, task) in enumerate(visible_tasks):
             row_position = i + 3  # Start after header
