@@ -21,8 +21,8 @@ class TaskTUI:
         self.task_manager = task_manager
         self.current_row = 0
         self.top_line = 0
-        self.filter_status = None
-        self.sort_mode = SortMode.NONE
+        self.filter_status = TaskStatus.TODO  # Default: show only todos
+        self.sort_mode = SortMode.PRIORITY_DESC  # Default: sort by priority descending
         self.running = True
         
         # Initialize colors
